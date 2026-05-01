@@ -1,0 +1,11 @@
+# Ignore test data and output files
+test-data/
+Data/
+output/
+*.log
+
+# Ignore Python and IDE files
+__pycache__/
+.venv/
+.idea/
+*.pyc
