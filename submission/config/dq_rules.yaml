@@ -1,0 +1,59 @@
+# ============================================================
+# Data Quality Rules
+#
+# This file is REQUIRED from Stage 2 onward.
+# The scoring system checks that your pipeline reads DQ logic
+# from this file rather than hardcoding it in Python.
+# ============================================================
+
+# ── Null checks ───────────────────────────────────────────────
+# Fields that must not be null. Records violating these rules
+# receive dq_flag = "NULL_REQUIRED"
+null_checks:
+  fact_transactions:
+    - transaction_id
+    - account_id
+    - transaction_date
+    - amount
+    - transaction_type
+    - currency
+    - channel
+
+# ── Type checks ───────────────────────────────────────────────
+# Fields with expected types. Records where values cannot be
+# cast receive dq_flag = "TYPE_MISMATCH"
+type_checks:
+  fact_transactions:
+    amount: decimal
+    transaction_date: date
+    transaction_timestamp: timestamp
+
+# ── Value domain checks ───────────────────────────────────────
+# Fields constrained to a fixed set of values
+domain_checks:
+  transaction_type:
+    allowed: [DEBIT, CREDIT, FEE, REVERSAL]
+    dq_flag: TYPE_MISMATCH
+  channel:
+    allowed: [POS, APP, ATM, EFT, USSD, INTERNAL]
+    dq_flag: TYPE_MISMATCH
+  currency:
+    allowed: [ZAR]
+    dq_flag: CURRENCY_VARIANT
+
+# ── Date format checks ────────────────────────────────────────
+# Date fields must conform to ISO format (YYYY-MM-DD)
+date_format_checks:
+  - transaction_date
+  - open_date
+  - last_activity_date
+  - dob
+
+# ── Referential integrity checks ─────────────────────────────
+# Transactions referencing an account_id not present in
+# dim_accounts receive dq_flag = "ORPHANED_ACCOUNT"
+referential_integrity:
+  fact_transactions:
+    - field: account_id
+      references: dim_accounts.account_id
+      dq_flag: ORPHANED_ACCOUNT
